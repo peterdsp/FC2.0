@@ -110,12 +110,15 @@ function streamAudio(req, res, { download }) {
   const stat = fs.statSync(file);
   const total = stat.size;
   const range = req.headers.range;
+  const ext = path.extname(file).toLowerCase();
+  const TYPES = { ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".aac": "audio/aac", ".webm": "audio/webm", ".opus": "audio/ogg", ".ogg": "audio/ogg" };
+  const ctype = TYPES[ext] || "application/octet-stream";
 
   res.setHeader("Accept-Ranges", "bytes");
-  res.setHeader("Content-Type", "audio/mpeg");
+  res.setHeader("Content-Type", ctype);
   res.setHeader("Cache-Control", "public, max-age=86400");
   if (download)
-    res.setHeader("Content-Disposition", `attachment; filename="${ep.id}.mp3"`);
+    res.setHeader("Content-Disposition", `attachment; filename="${ep.id}${ext}"`);
 
   if (range) {
     const [startStr, endStr] = range.replace(/bytes=/, "").split("-");

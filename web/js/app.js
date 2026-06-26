@@ -24,32 +24,55 @@ function renderHUD(v) {
     `conic-gradient(var(--gold) ${v.progress * 360}deg, rgba(255,255,255,0.12) 0)`;
 }
 
-/* ---------- Episodes rail ---------- */
+/* ---------- Episodes rail (real archive from fc-api, seed fallback) ---------- */
+let EP_LIST = EPISODES;
+
+async function loadEpisodes() {
+  try {
+    const r = await fetch(`${SHOW.apiBase}/episodes`);
+    if (!r.ok) throw 0;
+    const data = await r.json();
+    if (Array.isArray(data) && data.length) {
+      // playable (downloaded) episodes first, then by date desc
+      EP_LIST = data.sort((a, b) =>
+        (b.file ? 1 : 0) - (a.file ? 1 : 0) || (a.date < b.date ? 1 : -1)
+      );
+    }
+  } catch {
+    EP_LIST = EPISODES; // offline-of-backend: keep the seed
+  }
+}
+
 function renderEpisodes() {
   const rail = $("#epRail");
-  rail.innerHTML = EPISODES.map(
-    (ep) => `
+  rail.innerHTML = EP_LIST.slice(0, 14)
+    .map((ep) => {
+      const meta = ep.duration
+        ? `${fmtDuration(ep.duration)} · ${(ep.plays || 0).toLocaleString("el-GR")} ▶`
+        : new Date(ep.date).toLocaleDateString("el-GR", { day: "2-digit", month: "long", year: "numeric" });
+      const eraBadge = ep.era ? `<span class="tag">${ep.era.emoji || "🏆"} ${ep.era.label}</span>` : "";
+      const tags = (ep.tags || []).map((t) => `<span class="tag">#${t}</span>`).join("");
+      const playable = ep.file || ep.duration; // downloaded or seed
+      return `
     <article class="glass lg-refract ep-card" data-ep="${ep.id}">
-      <div class="cat">${ep.category}</div>
+      <div class="cat">${ep.category || "Fight Club"}${playable ? "" : ' · <span style="color:var(--ink-faint)">σύντομα</span>'}</div>
       <h3>${ep.title}</h3>
-      <p class="desc">${ep.description}</p>
-      <div class="tags">${ep.tags.map((t) => `<span class="tag">#${t}</span>`).join("")}</div>
+      <p class="desc">${ep.description || ""}</p>
+      <div class="tags">${eraBadge}${tags}</div>
       <div class="foot">
-        <small style="color:var(--ink-dim)">${fmtDuration(ep.duration)} · ${ep.plays.toLocaleString("el-GR")} ▶</small>
+        <small style="color:var(--ink-dim)">${meta}</small>
         <button class="play-btn" aria-label="Αναπαραγωγή">▶</button>
       </div>
-    </article>`
-  ).join("");
+    </article>`;
+    })
+    .join("");
 
   rail.querySelectorAll(".ep-card").forEach((card) => {
     trackPointer(card);
-    const ep = EPISODES.find((e) => e.id === card.dataset.ep);
-    card.querySelector(".play-btn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      playEpisode(ep);
-      toast(`▶ ${ep.title}`);
-    });
-    card.addEventListener("click", () => playEpisode(ep));
+    const ep = EP_LIST.find((e) => e.id === card.dataset.ep);
+    const play = () => { playEpisode(ep); toast(`▶ ${ep.title}`); };
+    card.querySelector(".play-btn").addEventListener("click", (e) => { e.stopPropagation(); play(); });
+    card.addEventListener("click", play);
   });
 }
 
@@ -132,7 +155,8 @@ function boot() {
   initPlayer();
   initLive();
   initMessages();
-  renderEpisodes();
+  renderEpisodes(); // seed immediately
+  loadEpisodes().then(renderEpisodes); // then swap in the real archive
   renderHistory();
   renderSegments();
   wireDaily();
