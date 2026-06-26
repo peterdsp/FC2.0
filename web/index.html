@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b0d" />
+  <title>Fight Club 2.0, Η εκπομπή που τα μαθαίνετε όλα τελευταίοι</title>
+  <meta name="description" content="Το Fight Club, remastered. Ζωντανά από τον bwinΣΠΟΡ FM 94.6, αρχείο εκπομπών, 25 χρόνια ιστορίας, FC Legacy και quizzes, premium liquid-glass, ultralight." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preload" href="assets/fonts/SFProDisplay-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="styles/liquid-glass.css" />
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body>
+  <!-- Liquid-glass refraction filter -->
+  <svg class="lg-svg-defs" aria-hidden="true">
+    <filter id="lg-displace" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="noise" />
+      <feGaussianBlur in="noise" stdDeviation="1.1" result="soft" />
+      <feDisplacementMap in="SourceGraphic" in2="soft" scale="12" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <div class="ambient"><span class="e1"></span><span class="e2"></span><span class="e3"></span></div>
+  <div class="texture"></div>
+
+  <div class="shell">
+    <!-- Top bar / HUD -->
+    <header class="topbar glass glass-strong lg-refract">
+      <div class="brand">
+        <span class="logo">Fight Club</span>
+        <small id="station">bwinΣΠΟΡ FM 94.6 · 22:00–00:00</small>
+      </div>
+      <div class="hud">
+        <span class="glass-pill streak"><span class="flame">🔥</span> <b id="streakVal">0</b></span>
+        <span class="glass-pill xp">★ <b id="xpVal">0</b> XP</span>
+        <span class="lvl-badge">
+          <span id="lvlRing"></span>
+          <b class="t" id="lvlTitle">Lvl 1</b>
+        </span>
+      </div>
+    </header>
+
+    <!-- LIVE 24/7 stream -->
+    <section class="live-bar glass glass-live lg-refract" id="liveBar">
+      <button class="live-toggle" id="liveToggle" aria-label="Έναρξη ζωντανής ροής">▶</button>
+      <div class="live-meta">
+        <div class="row"><span class="live-dot"></span><span class="live-tag">Live · 24/7 · bwinΣΠΟΡ FM 94.6</span></div>
+        <b id="liveShow">bwinΣΠΟΡ FM 94.6 Αθήνα</b>
+        <small id="liveStatus">Πάτησε για ζωντανά</small>
+      </div>
+      <div class="eq right" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    </section>
+
+    <!-- Hero -->
+    <section class="hero glass lg-refract">
+      <div class="kicker">Από το 2001 · 25 χρόνια · Remastered</div>
+      <h1>Το Fight Club,<br />ξανά στο ρινγκ.</h1>
+      <p id="tagline">Η εκπομπή που τα μαθαίνετε όλα τελευταίοι</p>
+      <div class="cta-row">
+        <button class="glass-btn glass-btn--primary" id="dailyBtn">Daily Challenge</button>
+        <a class="glass-btn" href="#episodes">Άκου επεισόδια</a>
+      </div>
+      <div class="meta">
+        <span class="glass-pill">🎧 <b id="hosts">Τσαούσης &amp; Βαϊμάκης</b></span>
+        <span class="glass-pill">📻 Radio Project Mayhem</span>
+        <span class="glass-pill">🏆 #1 στη βραδινή ζώνη</span>
+      </div>
+    </section>
+
+    <!-- Episodes (red accent) -->
+    <section class="section" id="episodes">
+      <div class="section-head">
+        <h2>Πρόσφατα <span class="accent--red">Επεισόδια</span></h2>
+        <a href="#ondemand">On demand →</a>
+      </div>
+      <div class="rail" id="epRail"></div>
+    </section>
+
+    <!-- On demand / podcast (no login needed) -->
+    <section class="section" id="ondemand">
+      <div class="section-head">
+        <h2>On <span class="accent--red">Demand</span></h2>
+        <a href="https://www.sport-fm.gr/radio/show/fight-club" target="_blank" rel="noopener">sport-fm.gr →</a>
+      </div>
+      <div class="od-wrap">
+        <div class="glass lg-refract" style="padding:22px">
+          <p style="font-size:15px;line-height:1.55;color:var(--ink)">
+            Άκου ολόκληρα επεισόδια και κατέβασέ τα για offline. Οργανωμένα ανά
+            <b>χρονιά</b>, <b>μήνα</b> και <b>εποχή</b> (Euro, Μουντιάλ, τελικοί, μεγάλα ματς).
+          </p>
+          <div class="cta-row" style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+            <a class="glass-btn" href="https://www.mixcloud.com/SPORFM946/" target="_blank" rel="noopener">Mixcloud</a>
+            <a class="glass-btn" href="https://www.sport-fm.gr/radio/on-demand" target="_blank" rel="noopener">bwinΣΠΟΡ On Demand</a>
+            <a class="glass-btn" href="https://podcasts.apple.com/gr/podcast/id1522372434" target="_blank" rel="noopener">Apple Podcasts</a>
+            <a class="glass-btn" href="https://www.youtube.com/channel/UC8JX03ayxkgAJ9pycJTp9mw" target="_blank" rel="noopener">YouTube</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz (green accent) -->
+    <section class="section" id="quiz">
+      <div class="section-head">
+        <h2>Quiz, <span class="accent--green">πόσο FC είσαι;</span></h2>
+        <a href="#">Κατάταξη →</a>
+      </div>
+      <div class="quiz-packs" id="packGrid"></div>
+    </section>
+
+    <!-- History timeline (gold accent) -->
+    <section class="section" id="history">
+      <div class="section-head">
+        <h2>25 χρόνια <span class="accent--gold">ιστορίας</span></h2>
+        <a href="https://fightclub.gr/about/ti-ine-to-fight-club" target="_blank" rel="noopener">Το story →</a>
+      </div>
+      <div class="rail" id="historyRail"></div>
+    </section>
+
+    <!-- Messages (green accent) -->
+    <section class="section" id="messagesSection">
+      <div class="section-head">
+        <h2>Μήνυμα στην <span class="accent--green">εκπομπή</span></h2>
+      </div>
+      <div id="messages"></div>
+    </section>
+
+    <!-- Segments (gold accent) -->
+    <section class="section" id="legacy">
+      <div class="section-head">
+        <h2>FC <span class="accent--gold">Legacy</span></h2>
+        <a href="#">Όλα τα σεγκμεντ →</a>
+      </div>
+      <div class="seg-grid" id="segGrid"></div>
+    </section>
+
+    <footer>
+      <p class="fc-mark">Fight Club 2.0</p>
+      <p class="disclaimer">Ανεπίσημο fan project. Όλο το περιεχόμενο, οι ήχοι και τα ονόματα ανήκουν στο Fight Club &amp; στον bwinΣΠΟΡ FM 94.6.</p>
+    </footer>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
