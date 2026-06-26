@@ -34,7 +34,7 @@ const DATA = path.join(__dirname, "data");
 const app = express();
 app.use(
   cors({
-    origin: [/\.peterdsp\.dev$/, /localhost(:\d+)?$/, /127\.0\.0\.1(:\d+)?$/],
+    origin: [/\.peterdsp\.dev$/, /peterdsp\.github\.io$/, /localhost(:\d+)?$/, /127\.0\.0\.1(:\d+)?$/],
   })
 );
 app.use(express.json({ limit: "8kb" }));
