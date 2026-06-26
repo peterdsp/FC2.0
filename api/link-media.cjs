@@ -27,8 +27,12 @@ const eps = JSON.parse(fs.readFileSync(DATA, "utf8"));
 const byDate = {};
 eps.forEach((e) => (byDate[e.date] = e));
 
+// Prefer mp3 (universal, plays on iOS) over webm/opus when both exist for a date.
+const rank = (f) => (/\.mp3$/i.test(f) ? 0 : /\.(m4a|aac)$/i.test(f) ? 1 : 2);
+const files = walk(DIR).sort((a, b) => rank(b) - rank(a)); // best format processed LAST so it wins
+
 let linked = 0;
-for (const f of walk(DIR)) {
+for (const f of files) {
   const rel = path.relative(DIR, f);
   const m = path.basename(f).match(/(\d{4}-\d{2}-\d{2})/);
   if (!m) continue;

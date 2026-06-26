@@ -250,3 +250,14 @@ footer .disclaimer { font-size: 11.5px; color: var(--ink-faint); max-width: 52ch
   .dock .info b { font-size: 13px; }
   .sticker { bottom: 84px; }
 }
+
+/* messages: live banner + wall label (v4) */
+.msg-live { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border-radius: 12px; font-size: 14px; margin-bottom: 14px; }
+.msg-live.on { background: rgba(212,38,46,0.12); border: 1px solid rgba(212,38,46,0.3); }
+.msg-live.off { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-stroke-soft); color: var(--ink-dim); }
+.msg-live-btn { margin-left: auto; padding: 9px 16px; font-size: 13px; }
+.msg-wall-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-dim); font-weight: 700; margin-bottom: 10px; }
+.msg-wall-label span { color: var(--ink-faint); font-weight: 500; text-transform: none; letter-spacing: 0; }
+.msg-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.msg-send:disabled { opacity: 0.4; cursor: not-allowed; }
+#liveMsgScrim .modal { max-height: 88vh; overflow:auto; }
