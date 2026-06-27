@@ -52,10 +52,9 @@ function renderEpisodes() {
         : new Date(ep.date).toLocaleDateString("el-GR", { day: "2-digit", month: "long", year: "numeric" });
       const eraBadge = ep.era ? `<span class="tag">${ep.era.emoji || "🏆"} ${ep.era.label}</span>` : "";
       const tags = (ep.tags || []).map((t) => `<span class="tag">#${t}</span>`).join("");
-      const playable = ep.file || ep.duration; // downloaded or seed
       return `
     <article class="glass lg-refract ep-card" data-ep="${ep.id}">
-      <div class="cat">${ep.category || "Fight Club"}${playable ? "" : ' · <span style="color:var(--ink-faint)">σύντομα</span>'}</div>
+      <div class="cat">${ep.category || "Fight Club"}</div>
       <h3>${ep.title}</h3>
       <p class="desc">${ep.description || ""}</p>
       <div class="tags">${eraBadge}${tags}</div>

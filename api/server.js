@@ -22,6 +22,9 @@ import express from "express";
 import cors from "cors";
 import fs from "node:fs";
 import path from "node:path";
+import http from "node:http";
+import https from "node:https";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ERAS, groupByEra } from "./eras.js";
 import { SCHEDULE, currentShow } from "./schedule.js";
@@ -100,12 +103,66 @@ app.post("/messages", (req, res) => {
   res.status(201).json(msg);
 });
 
-/** Range-aware audio streaming so players can seek instantly. */
-function streamAudio(req, res, { download }) {
+/**
+ * On-demand source resolver. When an episode has no local file, resolve its
+ * upstream audio URL (Mixcloud / YouTube) with yt-dlp and cache it (URLs
+ * expire). This lets fc-api proxy any episode live, no storage needed.
+ */
+const YTDLP = process.env.FC_YTDLP || path.join(process.env.HOME || "", ".local/bin/yt-dlp");
+const srcCache = new Map(); // id -> { url, exp }
+
+function resolveSource(ep) {
+  return new Promise((resolve) => {
+    const c = srcCache.get(ep.id);
+    if (c && c.exp > Date.now()) return resolve(c.url);
+    const src = ep.mixcloud || (ep.youtube ? `https://www.youtube.com/watch?v=${ep.youtube}` : null);
+    if (!src) return resolve(null);
+    let out = "";
+    const p = spawn(YTDLP, ["-f", "bestaudio[ext=m4a]/bestaudio", "-g", "--no-playlist", src]);
+    p.stdout.on("data", (d) => (out += d));
+    p.on("error", () => resolve(null));
+    p.on("close", () => {
+      const url = out.trim().split("\n")[0];
+      if (/^https?:/.test(url)) {
+        srcCache.set(ep.id, { url, exp: Date.now() + 50 * 60 * 1000 });
+        resolve(url);
+      } else resolve(null);
+    });
+  });
+}
+
+/** Proxy an upstream audio URL to the client, passing Range through. */
+function proxyUpstream(url, req, res, { download, id }) {
+  const mod = url.startsWith("https") ? https : http;
+  const headers = { "User-Agent": "Mozilla/5.0" };
+  if (req.headers.range) headers.Range = req.headers.range;
+  const up = mod.get(url, { headers }, (r) => {
+    if (r.statusCode >= 400) { res.status(502).json({ error: "upstream " + r.statusCode }); r.resume(); return; }
+    res.status(r.statusCode === 206 ? 206 : 200);
+    res.setHeader("Accept-Ranges", "bytes");
+    res.setHeader("Content-Type", r.headers["content-type"] || "audio/mp4");
+    if (r.headers["content-length"]) res.setHeader("Content-Length", r.headers["content-length"]);
+    if (r.headers["content-range"]) res.setHeader("Content-Range", r.headers["content-range"]);
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    if (download) res.setHeader("Content-Disposition", `attachment; filename="${id}.m4a"`);
+    r.pipe(res);
+  });
+  up.on("error", () => { if (!res.headersSent) res.status(502).json({ error: "upstream error" }); });
+  req.on("close", () => up.destroy());
+}
+
+/** Range-aware audio streaming. Local file if present, else live proxy. */
+async function streamAudio(req, res, { download }) {
   const ep = loadEpisodes().find((e) => e.id === req.params.id);
+  if (!ep) return res.status(404).json({ error: "not found" });
   const file = mediaPath(ep);
-  if (!file || !fs.existsSync(file))
-    return res.status(404).json({ error: "audio unavailable" });
+
+  if (!file || !fs.existsSync(file)) {
+    // no local copy: resolve + proxy the upstream source on demand
+    const url = await resolveSource(ep);
+    if (!url) return res.status(404).json({ error: "audio unavailable" });
+    return proxyUpstream(url, req, res, { download, id: ep.id });
+  }
 
   const stat = fs.statSync(file);
   const total = stat.size;
@@ -138,7 +195,9 @@ function streamAudio(req, res, { download }) {
   }
 }
 
-app.get("/stream/:id", (req, res) => streamAudio(req, res, { download: false }));
-app.get("/download/:id", (req, res) => streamAudio(req, res, { download: true }));
+const safe = (handler) => (req, res) =>
+  handler(req, res).catch(() => { if (!res.headersSent) res.status(500).json({ error: "stream error" }); });
+app.get("/stream/:id", safe((req, res) => streamAudio(req, res, { download: false })));
+app.get("/download/:id", safe((req, res) => streamAudio(req, res, { download: true })));
 
 app.listen(PORT, () => console.log(`fc-api listening on :${PORT}`));

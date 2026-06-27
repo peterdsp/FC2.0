@@ -79,10 +79,11 @@ export function playEpisode(ep) {
   state = { kind: "episode", ep };
   audio.src = `${SHOW.apiBase}/stream/${ep.id}`;
   showDock();
-  audio.play().catch(() => {
-    document.getElementById("dockMeta").textContent = "Σύνδεσε το αρχείο για αναπαραγωγή";
-  });
-  setMeta(ep.title, `${ep.category} · ${ep.date}`);
+  // first play of a not-yet-stored episode resolves upstream (a few seconds)
+  setMeta(ep.title, ep.file ? `${ep.category} · ${ep.date}` : "Φόρτωση…");
+  const onPlaying = () => { setMeta(ep.title, `${ep.category} · ${ep.date}`); audio.removeEventListener("playing", onPlaying); };
+  audio.addEventListener("playing", onPlaying);
+  audio.play().catch(() => setMeta(ep.title, "Δοκίμασε ξανά"));
 }
 
 export function toggle() {
