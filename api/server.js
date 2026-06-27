@@ -76,6 +76,17 @@ app.get("/episodes/:id", (req, res) => {
 
 app.get("/quizzes", (_req, res) => res.json(loadQuizzes()));
 
+/** FC Legacy: real scraped content (dictionary + listener-message categories). */
+app.get("/legacy", (_req, res) => res.json(readJSON("legacy.json", [])));
+app.get("/legacy/:id", (req, res) => {
+  const seg = readJSON("legacy.json", []).find((s) => s.id === req.params.id);
+  if (!seg) return res.status(404).json({ error: "not found" });
+  res.json(seg);
+});
+
+/** News / articles scraped from fightclub.gr. */
+app.get("/news", (_req, res) => res.json(readJSON("news.json", [])));
+
 /** Archive grouped by era (Euro, World Cup, ...) and by year. */
 app.get("/eras", (_req, res) => {
   const eps = loadEpisodes();

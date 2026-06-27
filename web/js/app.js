@@ -151,25 +151,73 @@ function renderHistory() {
   rail.querySelectorAll(".glass").forEach(trackPointer);
 }
 
-/* ---------- Segments ---------- */
+/* ---------- FC Legacy (real scraped content) ---------- */
+let LEGACY = [];
+
+async function loadLegacy() {
+  try {
+    const r = await fetch(`${SHOW.apiBase}/legacy`);
+    if (r.ok) { const d = await r.json(); if (Array.isArray(d) && d.length) LEGACY = d; }
+  } catch {}
+}
+
 function renderSegments() {
   const grid = $("#segGrid");
-  grid.innerHTML = SEGMENTS.map(
+  const segs = LEGACY.length ? LEGACY : SEGMENTS.map((s) => ({ ...s, count: 0 }));
+  grid.innerHTML = segs.map(
     (s) => `
     <div class="glass lg-refract seg-tile" data-seg="${s.id}">
-      <div class="emoji">${s.emoji}</div>
+      <div class="emoji">${s.emoji || "📁"}</div>
       <div class="name">${s.name}</div>
+      ${s.count ? `<div class="seg-count">${s.count}</div>` : ""}
     </div>`
   ).join("");
   grid.querySelectorAll(".seg-tile").forEach((t) => {
     trackPointer(t);
     t.addEventListener("click", () => {
-      popSticker("read"); // a little FC reaction when you dig into a segment
-      // Segments tie back into the matching quiz pack where one exists.
-      const pack = QUIZ_PACKS.find((p) => p.name.includes("Legacy")) || QUIZ_PACKS[0];
-      openQuiz(pack, { onClose: refresh });
+      const seg = LEGACY.find((x) => x.id === t.dataset.seg);
+      if (seg && seg.entries && seg.entries.length) { popSticker("read"); openLegacy(seg); }
+      else openQuiz(QUIZ_PACKS[0], { onClose: refresh }); // fallback if not loaded yet
     });
   });
+}
+
+function openLegacy(seg) {
+  let scrim = $("#legacyScrim");
+  if (!scrim) {
+    scrim = document.createElement("div");
+    scrim.id = "legacyScrim";
+    scrim.className = "modal-scrim";
+    scrim.innerHTML = `<div class="glass glass-strong lg-refract modal legacy-modal"></div>`;
+    document.body.appendChild(scrim);
+    scrim.addEventListener("click", (e) => { if (e.target === scrim) scrim.classList.remove("open"); });
+  }
+  const body = seg.type === "glossary"
+    ? seg.entries.map((e) => `<div class="leg-entry"><b>${e.term}</b><span>${e.def}</span></div>`).join("")
+    : seg.entries.map((e) => `<div class="leg-entry msg-like">${e.text}</div>`).join("");
+  scrim.querySelector(".legacy-modal").innerHTML = `
+    <div class="q-head" style="margin-bottom:14px">
+      <b style="font-size:18px">${seg.emoji || ""} ${seg.name}</b>
+      <button class="glass-pill" id="legClose" style="cursor:pointer">✕</button>
+    </div>
+    <div class="leg-list">${body}</div>`;
+  scrim.querySelector("#legClose").addEventListener("click", () => scrim.classList.remove("open"));
+  scrim.classList.add("open");
+}
+
+/* ---------- News (scraped articles from fightclub.gr) ---------- */
+async function renderNews() {
+  const rail = $("#newsRail");
+  if (!rail) return;
+  let items = [];
+  try { const r = await fetch(`${SHOW.apiBase}/news`); if (r.ok) items = await r.json(); } catch {}
+  if (!items.length) { $("#newsSection")?.style && ($("#newsSection").style.display = "none"); return; }
+  rail.innerHTML = items.slice(0, 16).map((n) => `
+    <a class="glass lg-refract news-card" href="${n.url}" target="_blank" rel="noopener">
+      <div class="news-thumb"${n.image ? ` style="background-image:url('${n.image}')"` : ""}></div>
+      <div class="news-title">${n.title}</div>
+    </a>`).join("");
+  rail.querySelectorAll(".news-card").forEach(trackPointer);
 }
 
 /* ---------- Quiz packs ---------- */
@@ -219,7 +267,9 @@ function boot() {
   renderEpisodes(); // seed immediately
   loadEpisodes().then(() => { renderEpisodes(); renderArchive(); }); // real archive
   renderHistory();
-  renderSegments();
+  renderSegments(); // placeholder, then real content
+  loadLegacy().then(renderSegments);
+  renderNews();
   wireDaily();
   document.querySelectorAll(".topbar, .hero").forEach(trackPointer);
 
