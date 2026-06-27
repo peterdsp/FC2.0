@@ -72,30 +72,21 @@
     <section class="section" id="episodes">
       <div class="section-head">
         <h2>Πρόσφατα <span class="accent--red">Επεισόδια</span></h2>
-        <a href="#ondemand">On demand →</a>
+        <a href="#archive">Όλο το αρχείο →</a>
       </div>
       <div class="rail" id="epRail"></div>
     </section>
 
-    <!-- On demand / podcast (no login needed) -->
-    <section class="section" id="ondemand">
+    <!-- Archive: scraped from fightclub.gr, streamed on demand by fc-api -->
+    <section class="section" id="archive">
       <div class="section-head">
-        <h2>On <span class="accent--red">Demand</span></h2>
-        <a href="https://www.sport-fm.gr/radio/show/fight-club" target="_blank" rel="noopener">sport-fm.gr →</a>
+        <h2>Αρχείο <span class="accent--red">εκπομπών</span></h2>
+        <small id="archCount" style="color:var(--ink-dim)"></small>
       </div>
-      <div class="od-wrap">
-        <div class="glass lg-refract" style="padding:22px">
-          <p style="font-size:15px;line-height:1.55;color:var(--ink)">
-            Άκου ολόκληρα επεισόδια και κατέβασέ τα για offline. Οργανωμένα ανά
-            <b>χρονιά</b>, <b>μήνα</b> και <b>εποχή</b> (Euro, Μουντιάλ, τελικοί, μεγάλα ματς).
-          </p>
-          <div class="cta-row" style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
-            <a class="glass-btn" href="https://www.mixcloud.com/SPORFM946/" target="_blank" rel="noopener">Mixcloud</a>
-            <a class="glass-btn" href="https://www.sport-fm.gr/radio/on-demand" target="_blank" rel="noopener">bwinΣΠΟΡ On Demand</a>
-            <a class="glass-btn" href="https://podcasts.apple.com/gr/podcast/id1522372434" target="_blank" rel="noopener">Apple Podcasts</a>
-            <a class="glass-btn" href="https://www.youtube.com/channel/UC8JX03ayxkgAJ9pycJTp9mw" target="_blank" rel="noopener">YouTube</a>
-          </div>
-        </div>
+      <div class="arch-filters" id="archFilters"></div>
+      <div class="arch-grid" id="archGrid"></div>
+      <div style="text-align:center;margin-top:20px">
+        <button class="glass-btn" id="archMore" style="display:none">Περισσότερα</button>
       </div>
     </section>
 

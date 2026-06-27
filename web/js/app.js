@@ -75,6 +75,68 @@ function renderEpisodes() {
   });
 }
 
+/* ---------- Archive browser (year / era filters, image cards) ---------- */
+const archState = { filter: null, shown: 24 };
+
+function renderArchive() {
+  const filtersEl = $("#archFilters");
+  const countEl = $("#archCount");
+  if (!filtersEl) return;
+  if (!EP_LIST.length || !EP_LIST[0].date) return; // seed has no real archive
+
+  const years = [...new Set(EP_LIST.map((e) => e.year).filter(Boolean))].sort().reverse();
+  const eras = [];
+  const seen = new Set();
+  for (const e of EP_LIST) {
+    if (e.era && !seen.has(e.era.id)) { seen.add(e.era.id); eras.push(e.era); }
+  }
+  if (!archState.filter && years.length) archState.filter = { type: "year", val: years[0] };
+
+  const chip = (label, active, type, val) =>
+    `<button class="arch-chip${active ? " on" : ""}" data-type="${type}" data-val="${val}">${label}</button>`;
+  filtersEl.innerHTML =
+    years.map((y) => chip(y, archState.filter?.val === y, "year", y)).join("") +
+    eras.map((er) => chip(`${er.emoji || "🏆"} ${er.label}`, archState.filter?.val === er.id, "era", er.id)).join("");
+
+  filtersEl.querySelectorAll(".arch-chip").forEach((b) =>
+    b.addEventListener("click", () => {
+      archState.filter = { type: b.dataset.type, val: b.dataset.val };
+      archState.shown = 24;
+      renderArchive();
+    })
+  );
+
+  const f = archState.filter;
+  const list = EP_LIST.filter((e) =>
+    f.type === "year" ? e.year === f.val : e.era && e.era.id === f.val
+  );
+  if (countEl) countEl.textContent = `${EP_LIST.length} επεισόδια`;
+
+  const grid = $("#archGrid");
+  grid.innerHTML = list.slice(0, archState.shown).map((ep) => `
+    <article class="glass arch-card" data-ep="${ep.id}">
+      <div class="arch-thumb"${ep.image ? ` style="background-image:url('${ep.image}')"` : ""}>
+        <button class="play-btn arch-play" aria-label="Αναπαραγωγή">▶</button>
+      </div>
+      <div class="arch-info">
+        <div class="cat">${new Date(ep.date).toLocaleDateString("el-GR", { day: "2-digit", month: "short", year: "numeric" })}</div>
+        <h4>${ep.title}</h4>
+      </div>
+    </article>`).join("");
+
+  grid.querySelectorAll(".arch-card").forEach((card) => {
+    const ep = list.find((e) => e.id === card.dataset.ep);
+    const play = () => { playEpisode(ep); toast(`▶ ${ep.title}`); };
+    card.addEventListener("click", play);
+  });
+
+  const more = $("#archMore");
+  if (more) {
+    more.style.display = list.length > archState.shown ? "inline-flex" : "none";
+    more.onclick = () => { archState.shown += 24; renderArchive(); };
+  }
+}
+
 /* ---------- History timeline ---------- */
 function renderHistory() {
   const rail = $("#historyRail");
@@ -155,7 +217,7 @@ function boot() {
   initLive();
   initMessages();
   renderEpisodes(); // seed immediately
-  loadEpisodes().then(renderEpisodes); // then swap in the real archive
+  loadEpisodes().then(() => { renderEpisodes(); renderArchive(); }); // real archive
   renderHistory();
   renderSegments();
   wireDaily();
