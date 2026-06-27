@@ -115,19 +115,28 @@ function resolveSource(ep) {
   return new Promise((resolve) => {
     const c = srcCache.get(ep.id);
     if (c && c.exp > Date.now()) return resolve(c.url);
-    const src = ep.mixcloud || (ep.youtube ? `https://www.youtube.com/watch?v=${ep.youtube}` : null);
-    if (!src) return resolve(null);
-    let out = "";
-    const p = spawn(YTDLP, ["-f", "bestaudio[ext=m4a]/bestaudio", "-g", "--no-playlist", src]);
-    p.stdout.on("data", (d) => (out += d));
-    p.on("error", () => resolve(null));
-    p.on("close", () => {
-      const url = out.trim().split("\n")[0];
-      if (/^https?:/.test(url)) {
-        srcCache.set(ep.id, { url, exp: Date.now() + 50 * 60 * 1000 });
-        resolve(url);
-      } else resolve(null);
-    });
+    // Try the full-length on-demand (Mixcloud) first, fall back to the episode's
+    // YouTube upload. Whichever resolves first wins.
+    const sources = [
+      ep.mixcloud,
+      ep.youtube ? `https://www.youtube.com/watch?v=${ep.youtube}` : null,
+    ].filter(Boolean);
+    let i = 0;
+    const tryNext = () => {
+      if (i >= sources.length) return resolve(null);
+      let out = "";
+      const p = spawn(YTDLP, ["-f", "bestaudio[ext=m4a]/bestaudio", "-g", "--no-playlist", sources[i++]]);
+      p.stdout.on("data", (d) => (out += d));
+      p.on("error", tryNext);
+      p.on("close", () => {
+        const url = out.trim().split("\n")[0];
+        if (/^https?:/.test(url)) {
+          srcCache.set(ep.id, { url, exp: Date.now() + 50 * 60 * 1000 });
+          resolve(url);
+        } else tryNext();
+      });
+    };
+    tryNext();
   });
 }
 

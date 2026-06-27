@@ -89,6 +89,7 @@ function parseListing(html) {
         image: it.image,
         source: it.url,
         mixcloud: old.mixcloud || mixcloudFor(it.date),
+        youtube: old.youtube || null,
         file: old.file || null,
         tags: [], description: "", plays: old.plays || 0,
       };
@@ -97,6 +98,21 @@ function parseListing(html) {
   // keep any older episodes we had but that fell off the scrape window
   for (const e of prev) if (!scraped.has(e.date)) eps.push(e);
   eps.sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  // Enrich: grab each episode's YouTube id (reliable per-episode audio source)
+  // from its page. Incremental, concurrency-limited, only for ones missing it.
+  const todo = eps.filter((e) => e.source && !e.youtube);
+  process.stderr.write(`  enriching ${todo.length} episodes with YouTube ids…\n`);
+  let idx = 0;
+  const worker = async () => {
+    while (idx < todo.length) {
+      const e = todo[idx++];
+      const html = await get(e.source);
+      const m = html.match(/youtube\.com\/embed\/([A-Za-z0-9_-]{11})/);
+      if (m) e.youtube = m[1];
+    }
+  };
+  await Promise.all(Array.from({ length: 8 }, worker));
 
   fs.writeFileSync(OUT, JSON.stringify(eps, null, 2));
   console.log(`catalog: ${eps.length} episodes (${eps[eps.length - 1]?.date} -> ${eps[0]?.date})`);
