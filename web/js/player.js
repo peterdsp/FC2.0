@@ -81,9 +81,15 @@ export function playEpisode(ep) {
   showDock();
   // first play of a not-yet-stored episode resolves upstream (a few seconds)
   setMeta(ep.title, ep.file ? `${ep.category} · ${ep.date}` : "Φόρτωση…");
-  const onPlaying = () => { setMeta(ep.title, `${ep.category} · ${ep.date}`); audio.removeEventListener("playing", onPlaying); };
+  const cleanup = () => {
+    audio.removeEventListener("playing", onPlaying);
+    audio.removeEventListener("error", onErr);
+  };
+  const onPlaying = () => { setMeta(ep.title, `${ep.category} · ${ep.date}`); cleanup(); };
+  const onErr = () => { setMeta(ep.title, "Δεν βρέθηκε ήχος γι' αυτό το επεισόδιο"); cleanup(); };
   audio.addEventListener("playing", onPlaying);
-  audio.play().catch(() => setMeta(ep.title, "Δοκίμασε ξανά"));
+  audio.addEventListener("error", onErr);
+  audio.play().catch(() => {});
 }
 
 export function toggle() {
