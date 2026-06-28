@@ -11,6 +11,7 @@ import { initLive } from "./live.js";
 import { initMessages } from "./messages.js";
 import { popSticker } from "./stickers.js";
 import { trackPointer, fmtDuration, toast } from "./ui.js";
+import { COMPETITIONS, erasForDate } from "./eras.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -75,8 +76,16 @@ function renderEpisodes() {
   });
 }
 
-/* ---------- Archive browser (year / era filters, image cards) ---------- */
-const archState = { filter: null, shown: 24 };
+/* ---------- Archive browser (two-level menu: category → edition) ---------- */
+// cat: "year" or a competition id (euro/wc/ucl/uel/uecl). val: a year or era id.
+const archState = { cat: null, val: null, shown: 24 };
+
+/** Year + every tournament era an episode falls in (computed from its date). */
+function epYear(ep) { return ep.year || (ep.date ? ep.date.slice(0, 4) : null); }
+function epEras(ep) {
+  if (!ep._eras) ep._eras = ep.date ? erasForDate(ep.date) : ep.era ? [ep.era] : [];
+  return ep._eras;
+}
 
 function renderArchive() {
   const filtersEl = $("#archFilters");
@@ -84,33 +93,64 @@ function renderArchive() {
   if (!filtersEl) return;
   if (!EP_LIST.length || !EP_LIST[0].date) return; // seed has no real archive
 
-  const years = [...new Set(EP_LIST.map((e) => e.year).filter(Boolean))].sort().reverse();
-  const eras = [];
-  const seen = new Set();
-  for (const e of EP_LIST) {
-    if (e.era && !seen.has(e.era.id)) { seen.add(e.era.id); eras.push(e.era); }
+  // Available years and, per competition family, the editions that have episodes.
+  const years = [...new Set(EP_LIST.map(epYear).filter(Boolean))].sort().reverse();
+  const editions = {}; // comp id -> Map(eraId -> era) of eras that have episodes
+  for (const ep of EP_LIST) {
+    for (const er of epEras(ep)) {
+      (editions[er.comp] ||= new Map()).set(er.id, er);
+    }
   }
-  if (!archState.filter && years.length) archState.filter = { type: "year", val: years[0] };
+  // Top-level categories: Years first, then each competition that has content.
+  const cats = [{ id: "year", label: "Έτος", emoji: "📅" }];
+  for (const c of Object.values(COMPETITIONS).sort((a, b) => a.order - b.order)) {
+    if (editions[c.id]?.size) cats.push(c);
+  }
 
-  const chip = (label, active, type, val) =>
-    `<button class="arch-chip${active ? " on" : ""}" data-type="${type}" data-val="${val}">${label}</button>`;
+  // Default / heal the selection so it always points at something real.
+  const validCat = cats.some((c) => c.id === archState.cat);
+  if (!validCat) archState.cat = "year";
+  const editionList =
+    archState.cat === "year"
+      ? years.map((y) => ({ id: y, label: y }))
+      : [...editions[archState.cat].values()].sort((a, b) => (a.id < b.id ? 1 : -1));
+  if (!editionList.some((e) => e.id === archState.val)) {
+    archState.val = editionList[0]?.id ?? null;
+  }
+
+  const chip = (label, active, attrs) =>
+    `<button class="arch-chip${active ? " on" : ""}" ${attrs}>${label}</button>`;
   filtersEl.innerHTML =
-    years.map((y) => chip(y, archState.filter?.val === y, "year", y)).join("") +
-    eras.map((er) => chip(`${er.emoji || "🏆"} ${er.label}`, archState.filter?.val === er.id, "era", er.id)).join("");
+    `<div class="arch-cats">` +
+    cats.map((c) => chip(`${c.emoji} ${c.label}`, archState.cat === c.id, `data-cat="${c.id}"`)).join("") +
+    `</div><div class="arch-editions">` +
+    editionList
+      .map((e) => chip(e.short || e.label, archState.val === e.id, `data-edition="${e.id}"`))
+      .join("") +
+    `</div>`;
 
-  filtersEl.querySelectorAll(".arch-chip").forEach((b) =>
+  filtersEl.querySelectorAll(".arch-cats .arch-chip").forEach((b) =>
     b.addEventListener("click", () => {
-      archState.filter = { type: b.dataset.type, val: b.dataset.val };
+      archState.cat = b.dataset.cat;
+      archState.val = null; // re-defaults to the first edition below
+      archState.shown = 24;
+      renderArchive();
+    })
+  );
+  filtersEl.querySelectorAll(".arch-editions .arch-chip").forEach((b) =>
+    b.addEventListener("click", () => {
+      archState.val = b.dataset.edition;
       archState.shown = 24;
       renderArchive();
     })
   );
 
-  const f = archState.filter;
   const list = EP_LIST.filter((e) =>
-    f.type === "year" ? e.year === f.val : e.era && e.era.id === f.val
+    archState.cat === "year"
+      ? epYear(e) === archState.val
+      : epEras(e).some((er) => er.id === archState.val)
   );
-  if (countEl) countEl.textContent = `${EP_LIST.length} επεισόδια`;
+  if (countEl) countEl.textContent = `${list.length} από ${EP_LIST.length} επεισόδια`;
 
   const grid = $("#archGrid");
   grid.innerHTML = list.slice(0, archState.shown).map((ep) => `
