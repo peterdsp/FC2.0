@@ -115,6 +115,67 @@ app.post("/messages", (req, res) => {
 });
 
 /**
+ * On-air message relay → bwinΣΠΟΡ FM 94.6 (live24).
+ *
+ * The station's own widget POSTs to live24.gr/Hermes with a per-IP `check_id`
+ * (cid) that live24 embeds in its page. A browser on fc.peterdsp.dev can't do
+ * this (cross-origin, wrong IP, unreadable response), so we relay server-side:
+ * scrape a fresh cid from the minisite, then POST sendMessage from our own IP —
+ * the same flow jquery.live24.hermes.js performs. Listener nickname is folded
+ * into the message body (the sendMessage action carries no separate sender).
+ */
+const L24_MINISITE =
+  "https://live24.gr/radio/sportfm.jsp?ref=sportfm&type=iframe&v4=minisite&noplayer=true";
+const L24_HERMES = "https://live24.gr/Hermes";
+const L24_UA = "Mozilla/5.0 (fc.peterdsp.dev on-air relay)";
+const L24_MAX = 200; // live24's MAX_MESSAGE_LENGTH
+let l24 = { cid: null, sid: "1305", vid: null, exp: 0 };
+
+/** Refresh the scraped check_id / service_id (cached ~10 min). */
+async function l24EnsureConfig() {
+  if (l24.cid && l24.exp > Date.now()) return;
+  const r = await fetch(L24_MINISITE, { headers: { "User-Agent": L24_UA } });
+  const html = await r.text();
+  const cid = html.match(/check_id:\s*'(\d+)'/)?.[1];
+  const sid = html.match(/service_id:\s*(\d+)/)?.[1] || "1305";
+  if (!cid) throw new Error("no check_id");
+  l24 = { cid, sid, vid: l24.vid, exp: Date.now() + 10 * 60 * 1000 };
+}
+
+/** POST to Hermes with the shared session params; returns the XML body. */
+async function l24Post(extra) {
+  const body = new URLSearchParams({
+    vid: l24.vid ?? "-1", sid: l24.sid, cid: l24.cid, r: String(Math.random()), ...extra,
+  });
+  const r = await fetch(L24_HERMES, {
+    method: "POST",
+    headers: { "User-Agent": L24_UA, "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  const xml = await r.text();
+  const vid = xml.match(/forVisitor="(\d+)"/)?.[1];
+  if (vid) l24.vid = vid; // remember the assigned visitor id for next time
+  return xml;
+}
+
+app.post("/onair-message", async (req, res) => {
+  const name = String(req.body?.name || "").trim().slice(0, 40);
+  const raw = String(req.body?.text || "").trim().replace(/<\/?[^>]+>/g, ""); // strip HTML like the widget
+  if (!raw) return res.status(400).json({ error: "empty message" });
+  const message = (name ? `${name}: ${raw}` : raw).slice(0, L24_MAX);
+  try {
+    await l24EnsureConfig();
+    if (!l24.vid) await l24Post({}); // first contact: register a visitor id
+    const xml = await l24Post({ action: "sendMessage", message });
+    const status = xml.match(/messageStatus="([^"]+)"/)?.[1] || null;
+    if (status === "ok") return res.json({ ok: true, status });
+    return res.status(502).json({ ok: false, status: status || "unknown" });
+  } catch {
+    return res.status(502).json({ ok: false, error: "live24 unavailable" });
+  }
+});
+
+/**
  * On-demand source resolver. When an episode has no local file, resolve its
  * upstream audio URL (Mixcloud / YouTube) with yt-dlp and cache it (URLs
  * expire). This lets fc-api proxy any episode live, no storage needed.
