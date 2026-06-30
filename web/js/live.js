@@ -34,6 +34,6 @@ function paintNowOnAir() {
     el.innerHTML = `<span class="now-label">Τώρα</span> ${now.title}` +
       (now.nextTitle ? ` <span class="next-label">· Μετά</span> ${now.nextTitle}` : "");
   } else {
-    el.textContent = "bwinΣΠΟΡ FM 94.6 Αθήνα";
+    el.textContent = "Ραμαγιά";
   }
 }

@@ -4,7 +4,7 @@
  * and binds the live gamification HUD.
  */
 import { SHOW, EPISODES, SEGMENTS, QUIZ_PACKS, HISTORY } from "./data.js";
-import { subscribe } from "./gamification.js";
+import { subscribe, getView } from "./gamification.js";
 import { openQuiz } from "./quiz.js";
 import { initPlayer, playEpisode } from "./player.js";
 import { initLive } from "./live.js";
@@ -44,6 +44,38 @@ async function loadEpisodes() {
   }
 }
 
+/* ---------- By-the-numbers stat band (real archive figures) ---------- */
+function renderStats() {
+  const dated = EP_LIST.filter((e) => e.date);
+  if (!dated.length) return;
+  const fmt = (n) => n.toLocaleString("el-GR");
+  const eps = $("#stEpisodes");
+  if (eps) eps.textContent = dated.length >= 100 ? fmt(Math.floor(dated.length / 10) * 10) + "+" : fmt(dated.length);
+  const years = new Set(dated.map((e) => e.year || e.date.slice(0, 4)));
+  const yEl = $("#stYears");
+  if (yEl) yEl.textContent = Math.max(25, new Date().getFullYear() - 2001);
+  // distinct tournament editions represented in the catalog
+  const eras = new Set();
+  for (const e of dated) for (const er of epEras(e)) eras.add(er.id);
+  const erEl = $("#stEras");
+  if (erEl) erEl.textContent = eras.size ? eras.size : "—";
+}
+
+/* ---------- Bento featured tile (latest episode) ---------- */
+function renderFeatured() {
+  const tile = $("#bentoFeatured");
+  if (!tile || !EP_LIST.length) return;
+  const ep = EP_LIST[0];
+  const t = $("#featTitle"), m = $("#featMeta");
+  if (t) t.textContent = ep.title;
+  if (m) m.textContent = ep.date
+    ? new Date(ep.date).toLocaleDateString("el-GR", { day: "2-digit", month: "long", year: "numeric" })
+    : ep.category || "";
+  const play = () => { playEpisode(ep); toast(`▶ ${ep.title}`); };
+  tile.onclick = play;
+  tile.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); play(); } };
+}
+
 function renderEpisodes() {
   const rail = $("#epRail");
   rail.innerHTML = EP_LIST.slice(0, 14)
@@ -55,7 +87,7 @@ function renderEpisodes() {
       const tags = (ep.tags || []).map((t) => `<span class="tag">#${t}</span>`).join("");
       return `
     <article class="glass lg-refract ep-card" data-ep="${ep.id}">
-      <div class="cat">${ep.category || "Fight Club"}</div>
+      <div class="cat">${ep.category || "Ραμαγιά"}</div>
       <h3>${ep.title}</h3>
       <p class="desc">${ep.description || ""}</p>
       <div class="tags">${eraBadge}${tags}</div>
@@ -217,7 +249,7 @@ function renderSegments() {
     t.addEventListener("click", () => {
       const seg = LEGACY.find((x) => x.id === t.dataset.seg);
       if (seg && seg.entries && seg.entries.length) { popSticker("read"); openLegacy(seg); }
-      else openQuiz(QUIZ_PACKS[0], { onClose: refresh }); // fallback if not loaded yet
+      else openQuiz(PACKS[0], { onClose: refresh }); // fallback if not loaded yet
     });
   });
 }
@@ -260,10 +292,23 @@ async function renderNews() {
   rail.querySelectorAll(".news-card").forEach(trackPointer);
 }
 
-/* ---------- Quiz packs ---------- */
+/* ---------- Quiz packs (shared source of truth: GET /quizzes, seed fallback) ---------- */
+let PACKS = QUIZ_PACKS;
+
+async function loadQuizzes() {
+  try {
+    const r = await fetch(`${SHOW.apiBase}/quizzes`);
+    if (!r.ok) throw 0;
+    const data = await r.json();
+    if (Array.isArray(data) && data.length) PACKS = data;
+  } catch {
+    PACKS = QUIZ_PACKS; // offline-of-backend: keep the seed
+  }
+}
+
 function renderPacks(v) {
   const grid = $("#packGrid");
-  grid.innerHTML = QUIZ_PACKS.map((p) => {
+  grid.innerHTML = PACKS.map((p) => {
     const prog = v.packProgress[p.id] || 0;
     return `
     <article class="glass lg-refract pack-card" data-pack="${p.id}">
@@ -276,7 +321,7 @@ function renderPacks(v) {
 
   grid.querySelectorAll(".pack-card").forEach((card) => {
     trackPointer(card);
-    const pack = QUIZ_PACKS.find((p) => p.id === card.dataset.pack);
+    const pack = PACKS.find((p) => p.id === card.dataset.pack);
     card.addEventListener("click", () => openQuiz(pack, { onClose: refresh }));
   });
 }
@@ -290,27 +335,81 @@ function refresh() {
 /* ---------- Daily challenge ---------- */
 function wireDaily() {
   $("#dailyBtn").addEventListener("click", () => {
-    const pack = QUIZ_PACKS[Math.floor(Math.random() * QUIZ_PACKS.length)];
+    const pack = PACKS[Math.floor(Math.random() * PACKS.length)];
     openQuiz(pack, { onClose: refresh });
   });
+}
+
+/* ---------- Personal stats (local progress, no backend leaderboard) ---------- */
+function wireStats() {
+  const link = $("#statsLink");
+  if (link) link.addEventListener("click", (e) => { e.preventDefault(); openStats(); });
+
+  // "Όλα τα σεγκμεντ" → open the first real legacy segment, else scroll to it.
+  const seg = $("#segLink");
+  if (seg) seg.addEventListener("click", (e) => {
+    const first = LEGACY.find((s) => s.entries && s.entries.length);
+    if (first) { e.preventDefault(); openLegacy(first); }
+  });
+}
+
+function openStats() {
+  const v = lastView || getView();
+  let scrim = $("#statsScrim");
+  if (!scrim) {
+    scrim = document.createElement("div");
+    scrim.id = "statsScrim";
+    scrim.className = "modal-scrim";
+    scrim.innerHTML = `<div class="glass glass-strong lg-refract modal stats-modal"></div>`;
+    document.body.appendChild(scrim);
+    scrim.addEventListener("click", (e) => { if (e.target === scrim) scrim.classList.remove("open"); });
+  }
+  const packRows = PACKS.map((p) => {
+    const best = v.bestScores[p.id] || 0;
+    return `<div class="stat-row">
+      <span>${p.emoji} ${p.name}</span>
+      <span class="stat-val">${best}%</span>
+    </div>
+    <div class="bar"><i style="width:${best}%"></i></div>`;
+  }).join("");
+
+  scrim.querySelector(".stats-modal").innerHTML = `
+    <div class="q-head" style="margin-bottom:14px">
+      <b style="font-size:18px">📊 Τα στατιστικά μου</b>
+      <button class="glass-pill" id="statsClose" style="cursor:pointer">✕</button>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="big">${v.xp.toLocaleString("el-GR")}</div><small>XP</small></div>
+      <div class="stat-card"><div class="big">Lvl ${v.level}</div><small>${v.title}</small></div>
+      <div class="stat-card"><div class="big">🔥 ${v.streak}</div><small>σερί ημερών</small></div>
+    </div>
+    <div class="stat-next">${v.toNext > 0 ? `Άλλα <b>${v.toNext}</b> XP για το επόμενο level` : "Στο μέγιστο level! 🏆"}</div>
+    <div class="leg-list" style="margin-top:8px">${packRows}</div>
+    <div class="stat-foot">${v.dailyDone ? "✅ Ολοκλήρωσες το daily challenge σήμερα" : "⏳ Το daily challenge σε περιμένει"}</div>`;
+  scrim.querySelector("#statsClose").addEventListener("click", () => scrim.classList.remove("open"));
+  scrim.classList.add("open");
 }
 
 /* ---------- Boot ---------- */
 function boot() {
   $("#tagline").textContent = SHOW.tagline;
   $("#hosts").textContent = SHOW.hosts.join(" & ");
-  $("#station").textContent = `${SHOW.station} · ${SHOW.slot}`;
+  $("#station").textContent = SHOW.slot;
 
   initPlayer();
   initLive();
   initMessages();
   renderEpisodes(); // seed immediately
-  loadEpisodes().then(() => { renderEpisodes(); renderArchive(); }); // real archive
+  renderStats();
+  renderFeatured();
+  loadEpisodes().then(() => { renderEpisodes(); renderStats(); renderFeatured(); renderArchive(); }); // real archive
   renderHistory();
   renderSegments(); // placeholder, then real content
   loadLegacy().then(renderSegments);
+  loadQuizzes().then(() => { if (lastView) renderPacks(lastView); }); // shared /quizzes
   renderNews();
   wireDaily();
+  wireStats();
   document.querySelectorAll(".topbar, .hero").forEach(trackPointer);
 
   subscribe((v) => {

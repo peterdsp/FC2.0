@@ -4,9 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0b0d" />
-  <title>Fight Club 2.0, Η εκπομπή που τα μαθαίνετε όλα τελευταίοι</title>
-  <meta name="description" content="Το Fight Club, remastered. Ζωντανά από τον bwinΣΠΟΡ FM 94.6, αρχείο εκπομπών, 25 χρόνια ιστορίας, FC Legacy και quizzes, premium liquid-glass, ultralight." />
+  <title>Ραμαγιά — Η εκπομπή όπου τα μαθαίνετε όλα τελευταίοι</title>
+  <meta name="description" content="Ραμαγιά, remastered. Ζωντανά 24/7, αρχείο εκπομπών, 25 χρόνια ιστορίας, FC Legacy και quizzes, premium liquid-glass, ultralight." />
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Ραμαγιά" />
   <link rel="preload" href="assets/fonts/SFProDisplay-Regular.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="styles/liquid-glass.css" />
   <link rel="stylesheet" href="styles/app.css" />
@@ -28,8 +34,8 @@
     <!-- Top bar / HUD -->
     <header class="topbar glass glass-strong lg-refract">
       <div class="brand">
-        <span class="logo">Fight Club</span>
-        <small id="station">bwinΣΠΟΡ FM 94.6 · 22:00–00:00</small>
+        <span class="logo">Ραμαγιά</span>
+        <small id="station">Από το 2001 · 25 χρόνια</small>
       </div>
       <div class="hud">
         <span class="glass-pill streak"><span class="flame">🔥</span> <b id="streakVal">0</b></span>
@@ -41,31 +47,47 @@
       </div>
     </header>
 
-    <!-- LIVE 24/7 stream -->
-    <section class="live-bar glass glass-live lg-refract" id="liveBar">
-      <button class="live-toggle" id="liveToggle" aria-label="Έναρξη ζωντανής ροής">▶</button>
-      <div class="live-meta">
-        <div class="row"><span class="live-dot"></span><span class="live-tag">Live · 24/7 · bwinΣΠΟΡ FM 94.6</span></div>
-        <b id="liveShow">bwinΣΠΟΡ FM 94.6 Αθήνα</b>
-        <small id="liveStatus">Πάτησε για ζωντανά</small>
+    <!-- Bento grid: hero + live + featured + stats (modern template layout) -->
+    <section class="bento">
+      <!-- Hero (large tile) -->
+      <div class="bento-tile bento-hero glass lg-refract">
+        <div class="kicker">Από το 2001 · 25 χρόνια · Remastered</div>
+        <h1>Ραμαγιά,<br />ξανά στον αέρα.</h1>
+        <p id="tagline">Η εκπομπή που τα μαθαίνετε όλα τελευταίοι</p>
+        <div class="cta-row">
+          <button class="glass-btn glass-btn--primary" id="dailyBtn">Daily Challenge</button>
+          <a class="glass-btn" href="#episodes">Άκου επεισόδια</a>
+        </div>
+        <div class="meta">
+          <span class="glass-pill">🎧 <b id="hosts">Τσαούσης &amp; Βαϊμάκης</b></span>
+          <span class="glass-pill">📻 Radio Project Mayhem</span>
+        </div>
       </div>
-      <div class="eq right" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-    </section>
 
-    <!-- Hero -->
-    <section class="hero glass lg-refract">
-      <div class="kicker">Από το 2001 · 25 χρόνια · Remastered</div>
-      <h1>Το Fight Club,<br />ξανά στο ρινγκ.</h1>
-      <p id="tagline">Η εκπομπή που τα μαθαίνετε όλα τελευταίοι</p>
-      <div class="cta-row">
-        <button class="glass-btn glass-btn--primary" id="dailyBtn">Daily Challenge</button>
-        <a class="glass-btn" href="#episodes">Άκου επεισόδια</a>
+      <!-- Live 24/7 -->
+      <section class="bento-tile bento-live glass glass-live lg-refract" id="liveBar">
+        <button class="live-toggle" id="liveToggle" aria-label="Έναρξη ζωντανής ροής">▶</button>
+        <div class="live-meta">
+          <div class="row"><span class="live-dot"></span><span class="live-tag">Ζωντανά · 24/7</span></div>
+          <b id="liveShow">Ραμαγιά</b>
+          <small id="liveStatus">Πάτησε για ζωντανά</small>
+        </div>
+        <div class="eq right" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </section>
+
+      <!-- Featured: latest episode -->
+      <div class="bento-tile bento-feat glass lg-refract" id="bentoFeatured" role="button" tabindex="0">
+        <div class="feat-label">🎧 Τελευταίο επεισόδιο</div>
+        <div class="feat-title" id="featTitle">—</div>
+        <div class="feat-meta" id="featMeta"></div>
+        <span class="feat-play">▶</span>
       </div>
-      <div class="meta">
-        <span class="glass-pill">🎧 <b id="hosts">Τσαούσης &amp; Βαϊμάκης</b></span>
-        <span class="glass-pill">📻 Radio Project Mayhem</span>
-        <span class="glass-pill">🏆 #1 στη βραδινή ζώνη</span>
-      </div>
+
+      <!-- By the numbers (real archive figures) -->
+      <div class="bento-tile bento-stat glass" id="statBand"><b id="stEpisodes">—</b><small>επεισόδια</small></div>
+      <div class="bento-tile bento-stat glass"><b id="stYears">25</b><small>χρόνια</small></div>
+      <div class="bento-tile bento-stat glass"><b id="stEras">—</b><small>διοργανώσεις</small></div>
+      <div class="bento-tile bento-stat glass"><b>#1</b><small>βραδινή ζώνη</small></div>
     </section>
 
     <!-- Episodes (red accent) -->
@@ -103,7 +125,7 @@
     <section class="section" id="quiz">
       <div class="section-head">
         <h2>Quiz, <span class="accent--green">πόσο FC είσαι;</span></h2>
-        <a href="#">Κατάταξη →</a>
+        <a href="#" id="statsLink">Τα στατιστικά μου →</a>
       </div>
       <div class="quiz-packs" id="packGrid"></div>
     </section>
@@ -129,17 +151,25 @@
     <section class="section" id="legacy">
       <div class="section-head">
         <h2>FC <span class="accent--gold">Legacy</span></h2>
-        <a href="#">Όλα τα σεγκμεντ →</a>
+        <a href="#legacy" id="segLink">Όλα τα σεγκμεντ →</a>
       </div>
       <div class="seg-grid" id="segGrid"></div>
     </section>
 
     <footer>
-      <p class="fc-mark">Fight Club 2.0</p>
-      <p class="disclaimer">Ανεπίσημο fan project. Όλο το περιεχόμενο, οι ήχοι και τα ονόματα ανήκουν στο Fight Club &amp; στον bwinΣΠΟΡ FM 94.6.</p>
+      <p class="fc-mark">Ραμαγιά</p>
+      <p class="disclaimer">Ανεπίσημο fan project. Όλο το περιεχόμενο, οι ήχοι και τα ονόματα ανήκουν στους δημιουργούς της εκπομπής &amp; στους δικαιούχους τους.</p>
     </footer>
   </div>
 
   <script type="module" src="js/app.js"></script>
+  <script>
+    // Register the service worker for offline app-shell + install support.
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () =>
+        navigator.serviceWorker.register("sw.js").catch(() => {})
+      );
+    }
+  </script>
 </body>
 </html>

@@ -1,12 +1,13 @@
 {
   "name": "fc-api",
   "version": "1.0.0",
-  "description": "Fight Club 2.0 API, episode catalog, MP3 streaming (HTTP range) & downloads, with offline downloads.",
+  "description": "Ραμαγιά API — episode catalog, range MP3 streaming & downloads, plus a daily scraper scheduler that keeps the web/iOS/Android apps backend-driven.",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "ingest": "node ingest.js",
+    "refresh": "node scheduler.js",
     "dev": "node --watch server.js"
   },
   "engines": { "node": ">=18" },

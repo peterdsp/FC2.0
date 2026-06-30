@@ -8,3 +8,15 @@ api/media/
 # SF Pro Display is © Apple — don't redistribute binaries publicly.
 # Run web/assets/fonts/fetch-fonts.sh to generate them locally / on the server.
 web/assets/fonts/*.woff2
+
+# --- KMP app (app/) ---
+app/build/
+app/*/build/
+app/.gradle/
+app/local.properties
+app/.kotlin/
+# XcodeGen output + Xcode user state
+app/iosApp/iosApp.xcodeproj/
+app/iosApp/*.xcworkspace/
+xcuserdata/
+*.xcuserstate

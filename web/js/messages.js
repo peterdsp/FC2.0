@@ -36,7 +36,7 @@ export function initMessages() {
     root.innerHTML = `
       <div class="glass lg-refract msg-box">
         <div class="msg-live off">
-          🕙 Τα μηνύματα προς την εκπομπή είναι ανοιχτά <b>μόνο live</b>, 22:00-00:00 (ώρα Fight Club).
+          🕙 Τα μηνύματα προς την εκπομπή είναι ανοιχτά <b>μόνο live</b>, 22:00-00:00.
           Γύρνα όταν παίζει η εκπομπή για να στείλεις on-air.
         </div>
       </div>`;
@@ -48,7 +48,7 @@ export function initMessages() {
     <div class="glass lg-refract msg-box">
       <div class="msg-live on">
         <span class="live-dot"></span> <b>Η εκπομπή παίζει τώρα.</b>
-        Στείλε μήνυμα — πάει on-air στο bwinΣΠΟΡ FM 94.6.
+        Στείλε μήνυμα — πάει κατευθείαν on-air στην εκπομπή.
       </div>
 
       <div class="msg-private-label">🔒 Τα μηνύματά σου <span>· on-air στην εκπομπή + ιδιωτικό αρχείο σε αυτή τη συσκευή</span></div>
@@ -122,7 +122,7 @@ function openOfficialWidget(name, text) {
     scrim.innerHTML = `
       <div class="glass glass-strong lg-refract modal" style="width:min(440px,100%);padding:18px">
         <div class="q-head" style="margin-bottom:12px">
-          <b>📻 Στείλε on-air · bwinΣΠΟΡ FM 94.6</b>
+          <b>📻 Στείλε on-air στην εκπομπή</b>
           <button class="glass-pill" id="liveMsgClose" style="cursor:pointer">✕</button>
         </div>
         <p style="font-size:13px;color:var(--ink-dim);margin-bottom:12px">Το αυτόματο on-air δεν ήταν διαθέσιμο. Στείλε το μήνυμά σου από το επίσημο widget του σταθμού.</p>

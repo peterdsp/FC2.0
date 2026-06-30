@@ -27,6 +27,7 @@ export const ERAS = [
   { id: "euro-2024", label: "Euro 2024", short: "2024", emoji: "🏆", comp: "euro", ranges: [["2024-06-14", "2024-07-14"]] },
   { id: "euro-2028", label: "Euro 2028", short: "2028", emoji: "🏆", comp: "euro", ranges: [["2028-06-09", "2028-07-09"]] },
 
+  { id: "wc-2002", label: "World Cup 2002", short: "2002", emoji: "🌍", comp: "wc", ranges: [["2002-05-31", "2002-06-30"]] },
   { id: "wc-2006", label: "World Cup 2006", short: "2006", emoji: "🌍", comp: "wc", ranges: [["2006-06-09", "2006-07-09"]] },
   { id: "wc-2010", label: "World Cup 2010", short: "2010", emoji: "🌍", comp: "wc", ranges: [["2010-06-11", "2010-07-11"]] },
   { id: "wc-2014", label: "World Cup 2014", short: "2014", emoji: "🌍", comp: "wc", ranges: [["2014-06-12", "2014-07-13"]] },

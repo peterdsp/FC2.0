@@ -1,7 +1,7 @@
 /**
- * schedule.js, the bwinΣΠΟΡ FM 94.6 daily program (weekday grid) + the show
- * currently on air (Europe/Athens). Schedule belongs to bwinΣΠΟΡ FM 94.6;
- * shown only so listeners know what is playing.
+ * schedule.js, the daily program (weekday grid) + the show currently on air
+ * (Europe/Athens). The schedule belongs to the station; shown only so
+ * listeners know what is playing.
  */
 export const SCHEDULE = [
   { start: 360, end: 480, title: "Η ΚΑΛΗ ΜΕΡΑ ΑΠΟ ΤΗΝ ΜΠΑΛΑ ΦΑΙΝΕΤΑΙ" },
@@ -12,7 +12,7 @@ export const SCHEDULE = [
   { start: 960, end: 1080, title: "ΡΕΠΟΡΤΕΡ" },
   { start: 1080, end: 1200, title: "ΔΥΟ ΛΕΡΕΣ ΜΟΝΟ" },
   { start: 1200, end: 1320, title: "NEWSROOM" },
-  { start: 1320, end: 1440, title: "FIGHT CLUB", flagship: true },
+  { start: 1320, end: 1440, title: "ΡΑΜΑΓΙΑ", flagship: true },
   { start: 0, end: 120, title: "AFTER... ΡΑΔΙΟ" },
   { start: 120, end: 360, title: "ΗΧΟΓΡΑΦΗΜΕΝΗ ΕΚΠΟΜΠΗ" },
 ];

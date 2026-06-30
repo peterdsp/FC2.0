@@ -40,7 +40,7 @@ export function initPlayer() {
   d.innerHTML = `
     <div class="art" id="dockArt">📻</div>
     <div class="info">
-      <b id="dockTitle">Fight Club 2.0</b>
+      <b id="dockTitle">Ραμαγιά</b>
       <small id="dockMeta"></small>
     </div>
     <div class="controls" id="dockControls"></div>

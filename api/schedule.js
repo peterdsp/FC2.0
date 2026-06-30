@@ -14,7 +14,7 @@ export const SCHEDULE = [
   { start: 960, end: 1080, title: "ΡΕΠΟΡΤΕΡ" },
   { start: 1080, end: 1200, title: "ΔΥΟ ΛΕΡΕΣ ΜΟΝΟ" },
   { start: 1200, end: 1320, title: "NEWSROOM" },
-  { start: 1320, end: 1440, title: "FIGHT CLUB", flagship: true },
+  { start: 1320, end: 1440, title: "ΡΑΜΑΓΙΑ", flagship: true },
   { start: 0, end: 120, title: "AFTER... ΡΑΔΙΟ" },
   { start: 120, end: 360, title: "ΗΧΟΓΡΑΦΗΜΕΝΗ ΕΚΠΟΜΠΗ" },
 ];

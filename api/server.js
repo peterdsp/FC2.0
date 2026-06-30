@@ -10,9 +10,14 @@
  *   GET /eras                episodes grouped by era (Euro, World Cup, etc.)
  *   GET /schedule            daily on-air program
  *   GET /quizzes             quiz packs (apps share one source of truth)
+ *   GET /about               "Τι είναι η εκπομπή" + host bios
  *   GET /stream/:id          audio stream, supports `Range` for seeking
  *   GET /download/:id        forces a file download (offline listening)
  *   GET/POST /messages       listener message wall
+ *   POST /admin/refresh      trigger the scrape (x-admin-token: FC_ADMIN_TOKEN)
+ *
+ * A daily scheduler (see scheduler.js) re-scrapes new episodes, their streaming
+ * links, news and FC Legacy so the web/iOS/Android apps stay backend-driven.
  *
  * Config via env (all paths are deployment specific, set them yourself):
  *   FC_MEDIA_DIR  path to the MP3 library (default: ./media)
@@ -28,6 +33,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ERAS, groupByEra } from "./eras.js";
 import { SCHEDULE, currentShow } from "./schedule.js";
+import { startScheduler, runDailyRefresh } from "./scheduler.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MEDIA_DIR = process.env.FC_MEDIA_DIR || path.join(__dirname, "media");
@@ -86,6 +92,21 @@ app.get("/legacy/:id", (req, res) => {
 
 /** News / articles scraped from fightclub.gr. */
 app.get("/news", (_req, res) => res.json(readJSON("news.json", [])));
+
+/** "Τι είναι η εκπομπή" — about/lore + host bios (shared by web + apps). */
+app.get("/about", (_req, res) => res.json(readJSON("about.json", {})));
+
+/**
+ * Trigger the daily content refresh on demand (CI / webhook / manual).
+ * Guarded by FC_ADMIN_TOKEN; send it as the `x-admin-token` header.
+ */
+app.post("/admin/refresh", (req, res) => {
+  const token = process.env.FC_ADMIN_TOKEN;
+  if (!token || req.headers["x-admin-token"] !== token)
+    return res.status(401).json({ error: "unauthorized" });
+  runDailyRefresh("manual"); // fire-and-forget; never throws
+  res.status(202).json({ ok: true, started: true });
+});
 
 /** Archive grouped by era (Euro, World Cup, ...) and by year. */
 app.get("/eras", (_req, res) => {
@@ -281,4 +302,7 @@ const safe = (handler) => (req, res) =>
 app.get("/stream/:id", safe((req, res) => streamAudio(req, res, { download: false })));
 app.get("/download/:id", safe((req, res) => streamAudio(req, res, { download: true })));
 
-app.listen(PORT, () => console.log(`fc-api listening on :${PORT}`));
+app.listen(PORT, () => {
+  console.log(`fc-api listening on :${PORT}`);
+  startScheduler(); // daily scrape so the apps stay backend-driven & fresh
+});

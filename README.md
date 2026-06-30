@@ -1,58 +1,55 @@
 <div align="center">
 
-# ⚔️ FIGHT CLUB 2.0
+# 📻 Ραμαγιά
 
-### _Η εκπομπή που τα μαθαίνετε όλα τελευταίοι._
-
-An **unofficial, fan made** tribute to **Fight Club**, the late night sports & culture
-radio show on **bwinΣΠΟΡ FM 94.6**. Reimagined as an ultralight, ultra responsive
-Liquid Glass app: live radio, the archive, quizzes, and 25 years of lore.
+### _Η εκπομπή όπου τα μαθαίνετε όλα τελευταίοι._
 
 </div>
 
 > [!IMPORTANT]
-> ### Copyright & ownership
-> **All content, names, audio, branding, schedule and likenesses belong to Fight Club,
-> its hosts (Γιάννης Τσαούσης, Κώστας Βαϊμάκης), and bwinΣΠΟΡ FM 94.6 / their rights
-> holders.** This project claims **no ownership** of any of it. It is a non commercial,
-> fan made tribute by a listener, built out of respect for the show. No affiliation with
-> or endorsement by the station is implied. If a rights holder wants it changed or taken
-> down, that request is honored immediately.
+> **This is a fun, unofficial fan project — a tribute to the late-night _Fight Club_
+> sports & culture radio show, made by a listener out of pure love for it.**
+>
+> It is **non-commercial** and has **no affiliation with, and no endorsement from,**
+> the show, its hosts, or any radio station. **All names, audio, artwork, schedule,
+> branding and likenesses belong to their respective owners** — this project claims
+> **no ownership** of any of it. If a rights holder ever wants something changed or
+> taken down, that request is honored immediately, no questions asked.
 
-## ✨ Features
+A little love letter to 25 years of the show: live radio, the episode archive, a few
+quizzes built from its lore, and the "FC Legacy" bits — wrapped in a fast, premium
+Liquid Glass interface on web, iOS and Android.
 
-- **📻 Live 24/7 radio** with one tap, plus the show currently on air from the daily schedule.
-- **🎧 Archive** browse, stream and download, organised by year, month and **era** (Euro 2004/2008/2024, World Cups, Champions League, big events).
-- **🧠 Quizzes** built from the show's real 25 year history. XP, levels, daily streaks.
-- **💬 Messages** send a shout to the show, in app.
-- **🪟 Liquid Glass** white led, with red accent and green accent used equally. SF Pro Display. No frameworks, no external fonts.
-
-## 🗂 Structure
+## 🗂 What's in here
 
 ```
-web/   Liquid Glass PWA (the live site)
-api/   fc-api: archive catalog, quizzes, schedule, messages (Node/Express)
-app/   Unified Kotlin Multiplatform app spec (iOS + Android)
+web/   Liquid Glass PWA (installable, offline app-shell)
+api/   the backend (Node/Express): catalog, range audio streaming, quizzes,
+       schedule, FC Legacy, news + a daily scraper that keeps it all fresh
+app/   one Kotlin Multiplatform app (iOS + Android), Compose UI, fully API-driven
 ```
 
-## 🚀 Run locally
+The apps are **backend-driven**: everything (episodes, streaming links, news, lore)
+comes from the API, so they stay up to date on their own.
+
+## 🚀 Run it
 
 ```bash
-cd web && python3 -m http.server 4173   # http://localhost:4173
+# Web
+cd web && python3 -m http.server 4173      # http://localhost:4173
+
+# Backend
+cd api && npm install && npm start         # http://localhost:8080/health
+npm run refresh                            # pull fresh content on demand
+
+# Apps
+cd app && ./gradlew :composeApp:assembleDebug      # Android
+cd app/iosApp && xcodegen generate && open iosApp.xcodeproj   # iOS
 ```
 
-The live radio works offline-of-backend. The episode archive needs `fc-api` running.
-
-## 📦 fc-api
-
-```bash
-cd api && npm install && npm start       # http://localhost:8080/health
-```
-
-Serves the catalog, range-based audio streaming, downloads, the schedule, eras and a
-message wall. Deployment is environment specific and kept out of this repo.
+Deployment details are environment-specific and kept out of this repo.
 
 ## 📄 License
 
-Code: MIT (the application code only). **Show content is © its respective owners and is
-not licensed by this project.** See the copyright note above.
+Application **code** is MIT. **The show's content is © its respective owners and is
+not licensed by this project** — see the note above. Made with respect, just for fun. ❤️
