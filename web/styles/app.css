@@ -230,7 +230,9 @@ footer .fc-mark { font-style: italic; font-weight: 700; text-transform: uppercas
   color: var(--red); margin-right: 2px;
 }
 .live-meta .next-label { color: var(--ink-faint); }
-#liveShow { font-size: 15px; line-height: 1.25; }
+/* keep the now/next line to one row — long show names get a clean ellipsis
+   instead of wrapping into a cramped second line that crowds the status text. */
+#liveShow { font-size: 15px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* sticker reactions */
 .sticker {
