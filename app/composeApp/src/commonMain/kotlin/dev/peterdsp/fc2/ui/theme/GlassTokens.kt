@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 object GlassTokens {
     // Brand accents, used equally (red + green), gold for history.
     val Red = Color(0xFFD4262E)
-    val RedBright = Color(0xFFFF3B3B)
+    val RedBright = Color(0xFFFF1C17)  // Figma story ring: #FF1C17
     val Green = Color(0xFF19C37D)
     val GreenDeep = Color(0xFF0A8A4A)
     val Gold = Color(0xFFC9A227)
