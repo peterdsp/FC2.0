@@ -18,12 +18,14 @@ const audio = new Audio();
 audio.preload = "none";
 
 let state = { kind: null, ep: null }; // kind: 'live' | 'episode'
+let buffering = false;
 const changeListeners = new Set();
 export function onPlayerChange(fn) { changeListeners.add(fn); return () => changeListeners.delete(fn); }
 function emit() { const s = snapshot(); changeListeners.forEach((f) => f(s)); }
 export function snapshot() {
-  return { kind: state.kind, ep: state.ep, playing: !audio.paused && !!state.kind };
+  return { kind: state.kind, ep: state.ep, playing: !audio.paused && !!state.kind, buffering };
 }
+function setBuffering(b) { if (buffering === b) return; buffering = b; renderDock(); emit(); }
 
 const ICONS = {
   play: '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
@@ -55,7 +57,14 @@ export function initPlayer() {
   });
   audio.addEventListener("play", () => { renderDock(); emit(); });
   audio.addEventListener("pause", () => { renderDock(); emit(); });
-  audio.addEventListener("error", () => { renderDock(); emit(); });
+  audio.addEventListener("error", () => { setBuffering(false); renderDock(); emit(); });
+
+  // Buffering feedback: spinner while the stream resolves / stalls, cleared
+  // the moment audio actually plays or is ready.
+  audio.addEventListener("waiting", () => setBuffering(true));
+  audio.addEventListener("stalled", () => setBuffering(true));
+  audio.addEventListener("playing", () => setBuffering(false));
+  audio.addEventListener("canplay", () => setBuffering(false));
 
   if ("mediaSession" in navigator) {
     navigator.mediaSession.setActionHandler("play", () => audio.play());
@@ -71,6 +80,7 @@ export function playLive() {
   state = { kind: "live", ep: null };
   audio.src = LIVE_URL + "?_=" + Date.now(); // re-join the live edge
   showDock();
+  setBuffering(true);
   audio.play().catch(() => { renderDock(); emit(); });
   setMeta(SHOW.station, "Live 24/7");
 }
@@ -79,6 +89,7 @@ export function playEpisode(ep) {
   state = { kind: "episode", ep };
   audio.src = `${SHOW.apiBase}/stream/${ep.id}`;
   showDock();
+  setBuffering(true); // instant feedback while the stream resolves
   // first play of a not-yet-stored episode resolves upstream (a few seconds)
   setMeta(ep.title, ep.file ? `${ep.category} · ${ep.date}` : "Φόρτωση…");
   const cleanup = () => {
@@ -128,9 +139,10 @@ function renderDock() {
   if (scrub) scrub.style.display = isEp ? "block" : "none";
 
   const btn = (id, icon, cls = "") => `<button id="${id}" class="dock-btn ${cls}">${icon}</button>`;
+  const primaryCls = "primary" + (buffering ? " is-loading" : "");
   wrap.innerHTML =
     (isEp ? btn("dBack", ICONS.back) : "") +
-    btn("dToggle", playing ? ICONS.pause : ICONS.play, "primary") +
+    btn("dToggle", playing ? ICONS.pause : ICONS.play, primaryCls) +
     (isEp ? btn("dFwd", ICONS.fwd) + btn("dDl", ICONS.dl) : "");
 
   wrap.querySelector("#dToggle")?.addEventListener("click", toggle);

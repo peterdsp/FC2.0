@@ -92,16 +92,35 @@ h1, h2, h3, .display { font-family: var(--font); font-weight: 700; letter-spacin
 .rail { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 1fr); gap: 16px; overflow-x: auto; padding: 4px 4px 16px; scroll-snap-type: x mandatory; }
 .rail::-webkit-scrollbar { height: 7px; }
 .rail::-webkit-scrollbar-thumb { background: var(--glass-stroke-soft); border-radius: 10px; }
-.ep-card { padding: 20px; scroll-snap-align: start; cursor: pointer; transition: transform 0.3s var(--ease-out); }
+.ep-card { padding: 20px; scroll-snap-align: start; cursor: pointer; transition: transform 0.3s var(--ease-out);
+  display: flex; flex-direction: column; }
 .ep-card:hover { transform: translateY(-4px); }
 .ep-card .cat { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--red); font-weight: 700; }
 .ep-card h3 { margin: 10px 0 8px; font-size: 20px; line-height: 1.12; text-transform: none; }
-.ep-card .desc { font-size: 13.5px; color: var(--ink-dim); line-height: 1.45; min-height: 38px; }
-.ep-card .foot { margin-top: 16px; display: flex; align-items: center; justify-content: space-between; }
-.ep-card .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.ep-card .desc { font-size: 13.5px; color: var(--ink-dim); line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ep-card .desc:empty { display: none; }
+/* foot pinned to the bottom so meta + play button line up across every card,
+   regardless of description length (no more mid-card empty gaps). */
+.ep-card .foot { margin-top: auto; padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }
+.ep-card .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .tag { font-size: 11px; padding: 4px 9px; border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--ink-dim); }
-.play-btn { width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.18); cursor: pointer; flex: none; background: linear-gradient(135deg, var(--red), var(--red-deep)); color: #fff; font-size: 15px; display: grid; place-items: center; box-shadow: 0 8px 18px -8px rgba(212,38,46,0.6); transition: transform 0.2s var(--ease-spring); }
-.play-btn:hover { transform: scale(1.1); }
+.play-btn { position: relative; width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.18); cursor: pointer; flex: none; background: linear-gradient(135deg, var(--red), var(--red-deep)); color: #fff; font-size: 15px; display: grid; place-items: center; box-shadow: 0 3px 10px -6px rgba(212,38,46,0.45); transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-out); }
+.play-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px -8px rgba(212,38,46,0.7); }
+
+/* ---- Loading spinner (tap-to-play buffering feedback) ---- */
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+.is-loading { position: relative; color: transparent !important; pointer-events: none; }
+.is-loading > * { visibility: hidden; }
+.is-loading::after {
+  content: ""; position: absolute; top: 50%; left: 50%;
+  width: 18px; height: 18px; margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  animation: btn-spin 0.7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) { .is-loading::after { animation-duration: 1.4s; } }
 
 /* ---- On-demand / podcast ---- */
 .od-wrap { display: grid; gap: 14px; }
@@ -202,6 +221,8 @@ footer .fc-mark { font-style: italic; font-weight: 700; text-transform: uppercas
   width: 42px; height: 42px; background: var(--ink); color: #0b0b0d; border-radius: 12px;
 }
 .dock-btn.primary:hover { background: #fff; }
+/* dark spinner on the light primary dock button (white-on-white would vanish) */
+.dock-btn.primary.is-loading::after { border-color: rgba(0,0,0,0.22); border-top-color: #0b0b0d; }
 
 /* live bar "now on air" */
 .live-meta .now-label, .live-meta .next-label {
@@ -300,7 +321,8 @@ footer .disclaimer { font-size: 11.5px; color: var(--ink-faint); max-width: 52ch
 }
 .arch-thumb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.55)); }
 .arch-play { position: relative; z-index: 2; opacity: 0; transform: scale(.8); transition: all .2s var(--ease-spring); }
-.arch-card:hover .arch-play { opacity: 1; transform: scale(1); }
+.arch-card:hover .arch-play,
+.arch-play.is-loading { opacity: 1; transform: scale(1); }
 .arch-info { padding: 13px 15px 16px; }
 .arch-info .cat { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--red); font-weight: 700; }
 .arch-info h4 { margin-top: 5px; font-size: 15px; font-weight: 600; line-height: 1.25;

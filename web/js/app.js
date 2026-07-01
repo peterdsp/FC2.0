@@ -6,7 +6,7 @@
 import { SHOW, EPISODES, SEGMENTS, QUIZ_PACKS, HISTORY } from "./data.js";
 import { subscribe, getView } from "./gamification.js";
 import { openQuiz } from "./quiz.js";
-import { initPlayer, playEpisode } from "./player.js";
+import { initPlayer, playEpisode, onPlayerChange } from "./player.js";
 import { initLive } from "./live.js";
 import { initMessages } from "./messages.js";
 import { popSticker } from "./stickers.js";
@@ -399,6 +399,17 @@ function boot() {
   initPlayer();
   initLive();
   initMessages();
+
+  // Spinner on whichever card's play button is currently loading, so the
+  // tap-to-play feedback lives where the user clicked, not just the dock.
+  onPlayerChange((s) => {
+    document.querySelectorAll(".play-btn.is-loading").forEach((b) => b.classList.remove("is-loading"));
+    if (s.buffering && s.ep) {
+      document
+        .querySelectorAll(`[data-ep="${s.ep.id}"] .play-btn`)
+        .forEach((b) => b.classList.add("is-loading"));
+    }
+  });
   renderEpisodes(); // seed immediately
   renderStats();
   renderFeatured();
