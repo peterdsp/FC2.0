@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import dev.peterdsp.fc2.About
 import dev.peterdsp.fc2.Brand
 import dev.peterdsp.fc2.model.Episode
+import dev.peterdsp.fc2.model.FcStory
 import dev.peterdsp.fc2.model.LegacySegment
 import dev.peterdsp.fc2.model.NewsItem
 import dev.peterdsp.fc2.model.QuizPack
@@ -86,9 +87,18 @@ fun HomeScreen(
     onPlayEpisode: (Episode) -> Unit,
     onDaily: () -> Unit,
     dailyDone: Boolean,
+    onOpenStory: (Int, List<FcStory>) -> Unit = { _, _ -> },
 ) {
     Column(Modifier.tabScroll(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         LiveBar(home.nowOnAir.title, onLiveToggle)
+
+        // Instagram-style stories strip
+        StoriesStrip(
+            onLive = onLiveToggle,
+            onOpenStory = onOpenStory,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         Hero(onDaily, dailyDone)
 
         SectionHead("Πρόσφατα Επεισόδια", GlassTokens.Red)

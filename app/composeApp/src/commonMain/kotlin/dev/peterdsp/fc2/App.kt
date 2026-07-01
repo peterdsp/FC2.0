@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.peterdsp.fc2.audio.PlaybackKind
+import dev.peterdsp.fc2.model.FcStory
 import dev.peterdsp.fc2.model.QuizPack
 import dev.peterdsp.fc2.ui.BottomNav
 import dev.peterdsp.fc2.ui.FcViewModel
@@ -40,6 +41,7 @@ import dev.peterdsp.fc2.ui.LegacyScreen
 import dev.peterdsp.fc2.ui.NowPlayingDock
 import dev.peterdsp.fc2.ui.QuizFlow
 import dev.peterdsp.fc2.ui.QuizScreen
+import dev.peterdsp.fc2.ui.StoryViewer
 import dev.peterdsp.fc2.ui.Tab
 import dev.peterdsp.fc2.ui.TopBar
 import dev.peterdsp.fc2.ui.theme.FcTheme
@@ -59,6 +61,7 @@ fun App(deps: AppDependencies) {
 
         var tab by remember { mutableStateOf(Tab.HOME) }
         var activePack by remember { mutableStateOf<QuizPack?>(null) }
+        var activeStory by remember { mutableStateOf<Pair<Int, List<FcStory>>?>(null) }
 
         val openPack: (QuizPack) -> Unit = { vm.touchStreak(); activePack = it }
         val daily: () -> Unit = { home.quizzes.randomOrNull()?.let(openPack) }
@@ -86,7 +89,10 @@ fun App(deps: AppDependencies) {
                     label = "tab",
                 ) { t ->
                     when (t) {
-                        Tab.HOME -> HomeScreen(home, vm::toggleLive, vm::playEpisode, daily, game.dailyDone)
+                        Tab.HOME -> HomeScreen(
+                            home, vm::toggleLive, vm::playEpisode, daily, game.dailyDone,
+                            onOpenStory = { idx, clips -> activeStory = idx to clips },
+                        )
                         Tab.QUIZ -> QuizScreen(home, game, openPack, daily)
                         Tab.LEGACY -> LegacyScreen(home)
                         Tab.INFO -> InfoScreen()
@@ -99,6 +105,15 @@ fun App(deps: AppDependencies) {
                 }
                 BottomNav(selected = tab, onSelect = { tab = it })
                 Spacer(Modifier.height(6.dp))
+            }
+
+            // Story viewer — full-screen overlay, shown above everything including QuizFlow
+            activeStory?.let { (idx, clips) ->
+                StoryViewer(
+                    stories = clips,
+                    startIndex = idx,
+                    onDismiss = { activeStory = null },
+                )
             }
 
             activePack?.let { pack ->
