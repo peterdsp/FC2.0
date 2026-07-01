@@ -86,12 +86,12 @@
   content: "";
   position: absolute; inset: 0;
   border-radius: inherit; padding: 1px;
+  /* Diagonal bevel matching the app: top-left bright -> mid fade -> bottom-right dim */
   background: linear-gradient(
-    150deg,
-    var(--glass-highlight) 0%,
-    transparent 22%,
-    transparent 80%,
-    rgba(255, 255, 255, 0.10) 100%
+    135deg,
+    rgba(255, 255, 255, 0.50) 0%,
+    rgba(255, 255, 255, 0.14) 40%,
+    rgba(255, 255, 255, 0.25) 100%
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
