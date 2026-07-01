@@ -4,7 +4,7 @@
  * survives a flaky connection. Audio streams are never cached (range +
  * bandwidth), API reads are network-first with a cached fallback.
  */
-const VERSION = "fc2-v9";
+const VERSION = "fc2-v10";
 const SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 
@@ -13,8 +13,7 @@ const SHELL_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./styles/liquid-glass.css",
-  "./styles/app.css",
+  "./styles/press.css",
   "./js/app.js",
   "./js/data.js",
   "./js/gamification.js",
@@ -26,9 +25,6 @@ const SHELL_ASSETS = [
   "./js/eras.js",
   "./js/stickers.js",
   "./js/ui.js",
-  "./assets/fonts/SFProDisplay-Regular.woff2",
-  "./assets/fonts/SFProDisplay-Medium.woff2",
-  "./assets/fonts/SFProDisplay-Bold.woff2",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   "./assets/apple-touch-icon.png",
