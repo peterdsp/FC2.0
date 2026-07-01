@@ -89,10 +89,10 @@ export const EPISODES = [
   },
   {
     id: "ep-legacy-leksiko",
-    title: "FC Legacy: Φαϊτκλαμποελληνικό Λεξικό",
+    title: "FC Stories: Φαϊτκλαμποελληνικό Λεξικό",
     date: "2026-06-15",
     duration: 5400,
-    category: "FC Legacy",
+    category: "FC Stories",
     tags: ["λεξικό", "best of", "Μεγάλες Αλήθειες"],
     description: "Οι όροι που έγραψαν ιστορία, Μουσαντέ, Παραληρήματα, Τριλήμματα και Μεγάλες Αλήθειες.",
     plays: 33110,
@@ -117,7 +117,7 @@ export const SEGMENTS = [
 export const QUIZ_PACKS = [
   {
     id: "legacy",
-    name: "FC Legacy",
+    name: "FC Stories",
     emoji: "📖",
     color: "#c9a227",
     questions: [
@@ -139,7 +139,7 @@ export const QUIZ_PACKS = [
         fact: "Το «Φαϊτκλαμποελληνικό Λεξικό» καθιέρωσε δεκάδες όρους.",
       },
       {
-        q: "Ποιο από τα παρακάτω ΔΕΝ είναι σεγκμεντ του FC Legacy;",
+        q: "Ποιο από τα παρακάτω ΔΕΝ είναι σεγκμεντ του FC Stories;",
         a: ["Μεγάλες Αλήθειες", "Τριλήμματα", "Παραληρήματα", "Ταχυδρόμος"],
         correct: 3,
         fact: "Μεγάλες Αλήθειες, Τριλήμματα και Παραληρήματα είναι κλασικά. Ο «Ταχυδρόμος» όχι.",
