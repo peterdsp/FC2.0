@@ -162,6 +162,27 @@
     </footer>
   </div>
 
+  <script>
+    // Paint shimmer skeletons before app.js hydrates, so async sections
+    // (archive, news) never show empty gaps. Runs at parse time; boot()
+    // overwrites each container with real content once it renders.
+    (function () {
+      const rep = (n, html) => Array.from({ length: n }, () => html).join("");
+      const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+      const ep = `<article class="glass ep-card skel"><div class="sk sk-cat"></div><div class="sk sk-h"></div><div class="sk sk-h sk-h2"></div><div class="sk sk-p"></div><div class="sk sk-p sk-p2"></div><div class="sk sk-foot"></div></article>`;
+      const arch = `<article class="glass arch-card skel"><div class="sk sk-thumb"></div><div class="arch-info"><div class="sk sk-cat"></div><div class="sk sk-h"></div></div></article>`;
+      const news = `<div class="glass news-card skel"><div class="sk sk-thumb"></div><div class="sk sk-t"></div><div class="sk sk-t sk-t2"></div></div>`;
+      const pack = `<article class="glass pack-card skel"><div class="sk sk-emoji"></div><div class="sk sk-h"></div><div class="sk sk-p"></div><div class="sk sk-bar"></div></article>`;
+      const seg = `<div class="glass seg-tile skel"><div class="sk sk-emoji"></div><div class="sk sk-h"></div></div>`;
+      const hist = `<article class="glass ep-card skel"><div class="sk sk-y"></div><div class="sk sk-p"></div><div class="sk sk-p sk-p2"></div></article>`;
+      set("epRail", rep(5, ep));
+      set("archGrid", rep(8, arch));
+      set("newsRail", rep(5, news));
+      set("packGrid", rep(4, pack));
+      set("historyRail", rep(5, hist));
+      set("segGrid", rep(8, seg));
+    })();
+  </script>
   <script type="module" src="js/app.js"></script>
   <script>
     // Register the service worker for offline app-shell + install support.

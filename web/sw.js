@@ -4,7 +4,7 @@
  * survives a flaky connection. Audio streams are never cached (range +
  * bandwidth), API reads are network-first with a cached fallback.
  */
-const VERSION = "fc2-v5";
+const VERSION = "fc2-v6";
 const SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 

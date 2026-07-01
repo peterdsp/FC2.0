@@ -383,3 +383,49 @@ footer .disclaimer { font-size: 11.5px; color: var(--ink-faint); max-width: 52ch
   .bento-live, .bento-feat { grid-column: 1 / -1; }
   .bento-stat { grid-column: span 1; }
 }
+
+/* ===== Loading skeletons =====================================================
+   Shimmer placeholders painted before app.js hydrates, so async sections
+   (archive, news) never show empty black gaps. Card shells reuse .glass, so
+   they carry the same bevel/fill as the real cards and swap in without shift. */
+@keyframes sk-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skel { pointer-events: none; }
+.sk {
+  background: linear-gradient(100deg,
+    rgba(255, 255, 255, 0.07) 25%,
+    rgba(255, 255, 255, 0.20) 45%,
+    rgba(255, 255, 255, 0.07) 65%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.35s linear infinite;
+  border-radius: 7px;
+}
+@media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+
+/* generic bars (episode + history cards use these defaults) */
+.sk-cat  { width: 38%; height: 10px; }
+.sk-h    { width: 85%; height: 17px; margin-top: 12px; }
+.sk-h2   { width: 60%; margin-top: 8px; }
+.sk-p    { width: 100%; height: 12px; margin-top: 14px; }
+.sk-p2   { width: 78%; margin-top: 8px; }
+.sk-foot { width: 50%; height: 12px; margin-top: 18px; }
+.sk-y    { width: 34%; height: 20px; }
+
+/* archive card: 16/9 thumb + info block */
+.arch-card.skel .sk-thumb { aspect-ratio: 16 / 9; border-radius: 0; }
+.arch-card.skel .sk-cat { width: 40%; }
+.arch-card.skel .sk-h { width: 90%; height: 14px; margin-top: 8px; }
+
+/* news card: thumb + two title lines */
+.news-card.skel .sk-thumb { aspect-ratio: 16 / 9; border-radius: 0; }
+.news-card.skel .sk-t  { height: 14px; margin: 12px 14px 0; }
+.news-card.skel .sk-t2 { width: 60%; margin-bottom: 15px; }
+
+/* quiz pack card */
+.pack-card.skel .sk-emoji { width: 30px; height: 30px; border-radius: 10px; }
+.pack-card.skel .sk-h { width: 65%; height: 16px; margin-top: 14px; }
+.pack-card.skel .sk-p { width: 85%; margin-top: 12px; }
+.pack-card.skel .sk-bar { width: 100%; height: 8px; margin-top: 18px; border-radius: 999px; }
+
+/* segment tile */
+.seg-tile.skel .sk-emoji { width: 26px; height: 26px; border-radius: 8px; }
+.seg-tile.skel .sk-h { width: 72%; height: 13px; margin-top: 12px; }
